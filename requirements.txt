@@ -1,2 +1,7 @@
 pyautogen
 pyautogen[gemini,retrievechat,lmm]
+
+langchain
+sentence_transformers
+langchain-google-genai
+langgraph

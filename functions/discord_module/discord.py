@@ -1,9 +1,7 @@
-from typing import Annotated, Literal
-from pydantic import BaseModel, Field
 from Secrets.keys import discord_id
 from Secrets.keys import bot_token
+from langchain.tools import BaseTool
 import requests
-
 
 def get_dm_channel(user_id):
     url = 'https://discord.com/api/v9/users/@me/channels'
@@ -46,27 +44,37 @@ def send_message(channel_id, message):
 
 
 # -------------------------------------------------------------------------------------------------------------------
-class DiscordInput(BaseModel):
-    recipient: Annotated[int, Field(description="The recipient.")]
-    message: Annotated[int, Field(description="The content of the message.")]
-def discord_messenger(input: Annotated[DiscordInput, "Input to the discord messenger."]) -> int:
-    print(f'recipient: {input.recipient}')
-    recipient={}
-    recipient['discord_id'] = discord_id
-    print(input.message)
-    try:
 
-        #recipient = {"discord_id": discord_id}
-        print(f"recipient_id: {recipient['discord_id']}\n{input.message}")
+class DiscordBot(BaseTool):
+    name = "discord_message"
+    description = "Useful to send me a message via Discord. Tool input should be message to be sent"
 
-        channel_id = get_dm_channel(recipient["discord_id"])  # (input("\nenter user id: "))
+    def __init__(self, bot_token: str):
+        bot_token = bot_token
+        object.__setattr__(self, "bot_token", bot_token)
+        super().__init__()
 
-        response = send_message(channel_id, input.message)
+    def _run(self, tool_input: str, **kwargs) -> str:
+        """Send a message to a Discord channel."""
+        message = tool_input
+        print(message)
+        try:
+            recipient = {"discord_id": discord_id}
 
-        if response.status_code == 200 or response.status_code == 201:
-            return f"Message:{input.message}\nMessage sent successfully"
-        else:
-            return f"Failed to send message, status code: {response.status_code}"
-    except Exception as e:
-        print(e)
-        return "failed to send message"
+            print(f"recipient_id: {recipient['discord_id']}\n{message}")
+
+            channel_id = get_dm_channel(recipient["discord_id"])
+
+            response = send_message(channel_id, message)
+
+            if response.status_code == 200 or response.status_code == 201:
+                return (f'\nObservation: The following text has been sent through discord successfully: "{message}"\n'
+                        f"you can stop now")
+            else:
+                return f"Failed to send message, status code: {response.status_code}"
+        except Exception as e:
+            print(e)
+            return "failed to send message"
+
+
+discord_messaging = DiscordBot(bot_token)
