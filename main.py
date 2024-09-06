@@ -1,9 +1,4 @@
 from autogen import AssistantAgent, UserProxyAgent
-from agents import phi3
+from agents import phi3, assistant
 
-user_proxy = UserProxyAgent("user_proxy", code_execution_config=False)
-
-user_proxy.initiate_chat(
-    phi3,
-    message="What is (44232 + 13312 / (232 - 32)) * 5?",
-)
+result = assistant.initiate_chat(phi3, message="look up when the next season of Arcane comes out and send it to me through discord.", max_turns=2)

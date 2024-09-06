@@ -42,6 +42,7 @@ def react_mem(chat_history: list):
         {agent_scratchpad}
         '''
 
+
 react='''
         Assistant is a large language model trained by BiscuitBobby.
 
@@ -79,3 +80,75 @@ react='''
         New input: {input}
         {agent_scratchpad}
         '''
+
+
+def orchestrator_mem(chat_history: list):
+    formatted_msgs = '\n'.join([f"{msg['name']} ({msg['role']}): {msg['content']}" for msg in chat_history])
+    print(formatted_msgs)
+    return """For the following task, make plans that can solve the problem step by step. For each plan, indicate \
+            which external tool together with tool input to retrieve evidence. You can store the evidence into a \
+            variable #E that can be called by later tools. (Plan, #E1, Plan, #E2, Plan, ...)
+            
+            Tools can be one of the following:
+            (1) Google[input]: Worker that searches results from Google. Useful when you need to find short
+            and succinct answers about a specific topic. The input should be a search query.
+            (2) LLM[input]: A pretrained LLM like yourself. Useful when you need to act with general
+            world knowledge and common sense. Prioritize it when you are confident in solving the problem
+            yourself. Input can be any instruction.
+            
+            For example,
+            Task: Thomas, Toby, and Rebecca worked a total of 157 hours in one week. Thomas worked x
+            hours. Toby worked 10 hours less than twice what Thomas worked, and Rebecca worked 8 hours
+            less than Toby. How many hours did Rebecca work?
+            Plan: Given Thomas worked x hours, translate the problem into algebraic expressions and solve
+            with Wolfram Alpha. #E1 = WolframAlpha[Solve x + (2x − 10) + ((2x − 10) − 8) = 157]
+            Plan: Find out the number of hours Thomas worked. #E2 = LLM[What is x, given #E1]
+            Plan: Calculate the number of hours Rebecca worked. #E3 = Calculator[(2 ∗ #E1 − 10) − 8]
+            
+            Begin! 
+            Describe your plans with rich details. Each Plan should be followed by only one #E.
+            
+            Task: {input}"""
+
+
+solve_prompt = """Assistant is a large language model trained by BiscuitBobby.
+    Assistant is designed to be able to assist with a wide range of tasks. 
+    
+    Solve the following task or problem. To solve the problem, we have made step-by-step Plan and \
+    retrieved corresponding Evidence to each Plan. Use them with caution since long evidence might \
+    contain irrelevant information.
+    
+    Plan:
+    
+    {plan}
+    
+    Now solve the question or task according to provided Evidence above.
+    
+    TOOLS:
+    ------
+
+    Assistant has access to the following tools:
+
+    {tools}
+
+    To use a tool, please use the following format:
+
+    ```
+    Thought: Do I need to use a tool? Yes
+    Action: the action to take, should be one of [{tool_names}]
+    Action Input: the input to the action
+    Observation: the result of the action
+    ```
+
+    When you do not have to use a tool, you MUST use the format:
+
+    ```
+    Thought: Do I need to use a tool? No
+    Final Answer: [your response here]
+    ```
+
+    Begin!
+
+    New Task: {input}
+    Response:"""
+

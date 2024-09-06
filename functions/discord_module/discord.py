@@ -1,3 +1,5 @@
+from langchain_core.tools import tool
+
 from Secrets.keys import discord_id
 from Secrets.keys import bot_token
 from langchain.tools import BaseTool
@@ -45,36 +47,25 @@ def send_message(channel_id, message):
 
 # -------------------------------------------------------------------------------------------------------------------
 
-class DiscordBot(BaseTool):
-    name = "discord_message"
-    description = "Useful to send me a message via Discord. Tool input should be message to be sent"
+@tool
+def DiscordMessage(tool_input: str):
+    """Useful to send me a message via Discord. Tool input should be message to be sent"""
+    message = tool_input
+    print(message)
+    try:
+        recipient = {"discord_id": discord_id}
 
-    def __init__(self, bot_token: str):
-        bot_token = bot_token
-        object.__setattr__(self, "bot_token", bot_token)
-        super().__init__()
+        print(f"recipient_id: {recipient['discord_id']}\n{message}")
 
-    def _run(self, tool_input: str, **kwargs) -> str:
-        """Send a message to a Discord channel."""
-        message = tool_input
-        print(message)
-        try:
-            recipient = {"discord_id": discord_id}
+        channel_id = get_dm_channel(recipient["discord_id"])
 
-            print(f"recipient_id: {recipient['discord_id']}\n{message}")
+        response = send_message(channel_id, message)
 
-            channel_id = get_dm_channel(recipient["discord_id"])
-
-            response = send_message(channel_id, message)
-
-            if response.status_code == 200 or response.status_code == 201:
-                return (f'\nObservation: The following text has been sent through discord successfully: "{message}"\n'
-                        f"you can stop now")
-            else:
-                return f"Failed to send message, status code: {response.status_code}"
-        except Exception as e:
-            print(e)
-            return "failed to send message"
-
-
-discord_messaging = DiscordBot(bot_token)
+        if response.status_code == 200 or response.status_code == 201:
+            return (f'\nObservation: The following text has been sent through discord successfully: "{message}"\n'
+                    f"you can stop now")
+        else:
+            return f"Failed to send message, status code: {response.status_code}"
+    except Exception as e:
+        print(e)
+        return "failed to send message"
