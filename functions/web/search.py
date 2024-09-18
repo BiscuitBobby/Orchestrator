@@ -1,31 +1,37 @@
 import wolframalpha
-from langchain_core.tools import BaseTool, tool
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.tools import tool
 from selenium import webdriver
-from Secrets.keys import google_api, wolfram_app_id
-
-llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro", google_api_key=google_api)
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from Secrets.keys import wolfram_app_id
+from models.api import Gemini as llm
+# from models.llama_3_8b import llm
 
 app_id = wolfram_app_id
 client = wolframalpha.Client(app_id)
 
 
-class websearch:
-    def __init__(self, model):
-        self.model = model
+class WebSearch:
+    def scrape_google_search(self, query, n=5):
+        # n = number of sites to scrape
 
-    def scrape_google_search(self, query):
         print('initializing...')
+
         info = []
         references = []
-        driver = webdriver.Firefox()
+        self.driver = webdriver.Firefox()
         print('searching...')
         try:
             url = f"https://www.google.com/search?q={query}"
-            driver.get(url)
+            self.driver.get(url)
+
+            WebDriverWait(self.driver, 5).until(
+                EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'div.tF2Cxc'))
+            )
 
             # Extract search results from the current page
-            search_results = driver.find_elements("css selector", 'div.tF2Cxc')
+            search_results = self.driver.find_elements("css selector", 'div.tF2Cxc')
 
             # Extract data from each search result
             for result in search_results:
@@ -40,6 +46,8 @@ class websearch:
                 description = f"{description}\n{description_element.text}"
 
                 references.append(f"Title: {title}, URL: {url}, DESCRIPTION: {description}")
+                if len(references)>=n:
+                    break
 
             info.append(references)
 
@@ -48,7 +56,7 @@ class websearch:
 
         finally:
             # print(info)
-            driver.quit()
+            self.driver.quit()
             return references
 
     def llm_prompt(self, query, context=None):
@@ -60,18 +68,19 @@ class websearch:
 
         else:
             try:
+                #prompt = f"Briefly answer the following query: {query}"
                 prompt = f"""
-                    Here is my query: {query},
-                    Here are some related search results: {self.scrape_google_search(query)}
-                    """
+                Briefly answer the following query: {query},
+                Here are some related search results: {self.scrape_google_search(query)}
+                """
             except:
                 print("failed to scrape results")
-                prompt = f"query: {query}"
+                prompt = f"Briefly answer the following query: {query}"
 
-        completion = self.model.invoke(prompt)
-
+        completion = llm.invoke(prompt)
         print(completion)
-        return completion.content
+
+        return completion
 
     def search_wolfram(self, query):
         try:
@@ -86,15 +95,15 @@ class websearch:
         print('start')
         context = self.search_wolfram(query)
         print(context)
-        response = f"**query**:\n{query}\n\n**response**:\n{self.llm_prompt(query, context)}"
+        response = self.llm_prompt(query, context)
         return response
 
 
 # -------------------------------------------------------------------------------------------------------------------
-search_agent = websearch(model=llm)
+search_agent = WebSearch()
 
-@tool
+@tool(return_direct=True)
 def CustomSearch(tool_input: str):
     """Useful for answering questions about future events, current affairs, positions of power, weather, details and events, browse the internet"""
 
-    return f"\nObservation: \nsearch_input: {tool_input}\nsearch_agent: {search_agent.search(tool_input)}"
+    return f"{search_agent.search(tool_input)}\n"

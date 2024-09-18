@@ -47,9 +47,10 @@ def send_message(channel_id, message):
 
 # -------------------------------------------------------------------------------------------------------------------
 
-@tool
+@tool(return_direct=True)
 def DiscordMessage(tool_input: str):
     """Useful to send me a message via Discord. Tool input should be message to be sent"""
+
     message = tool_input
     print(message)
     try:
@@ -62,8 +63,7 @@ def DiscordMessage(tool_input: str):
         response = send_message(channel_id, message)
 
         if response.status_code == 200 or response.status_code == 201:
-            return (f'\nObservation: The following text has been sent through discord successfully: "{message}"\n'
-                    f"you can stop now")
+            return (f'Observation: The Discord message "{message}" has been sent succesfully.\n')
         else:
             return f"Failed to send message, status code: {response.status_code}"
     except Exception as e:

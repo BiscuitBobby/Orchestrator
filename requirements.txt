@@ -5,6 +5,7 @@ langchain
 sentence_transformers
 langchain-google-genai
 langgraph
+google-generativeai
 
 llama-index-core
 llama-index
@@ -13,3 +14,4 @@ llama-index-packs-raptor
 llama-index-vector-stores-qdrant
 qdrant_client
 llama-index-embeddings-langchain
+llama-cpp-python

@@ -1,7 +1,5 @@
 from typing import Annotated, Literal
 from langchain_core.tools import tool
-
-from Secrets.keys import bot_token
 from functions.discord_module.discord import DiscordMessage
 from functions.web.search import CustomSearch
 
