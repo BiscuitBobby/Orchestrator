@@ -7,6 +7,9 @@ langchain-google-genai
 langgraph
 google-generativeai
 
+opencv-python
+matplotlib
+
 llama-index-core
 llama-index
 llama-index-llms-lmstudio
