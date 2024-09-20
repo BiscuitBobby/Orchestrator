@@ -41,7 +41,7 @@ def recognize_objects(image: np.ndarray, query="What is in this image"):
 
 @tool(return_direct=True)
 def CamImgTool(query):
-    """Useful for recognizing objects, images and faces, using webcam or camera"""
+    """Useful for recognizing objects, images and faces, using webcam or camera, can view what is in front of camera."""
     print("Starting recognition")
     response = describe_image(query)
     return response

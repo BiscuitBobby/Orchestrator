@@ -145,9 +145,6 @@ New Task: {input}
 Response:"""
 
 Llama_solve_prompt = """You are a large language model trained by BiscuitBobby.
-
-{action}
-
 Answer the following questions as best you can. You have access to the following tools:
 
 {tools}
@@ -164,6 +161,8 @@ Thought: I now know the final answer
 Final Answer: the final answer to the original input question
 
 Begin!
+
+{action}
 
 query: {input}
 Thought:{agent_scratchpad}

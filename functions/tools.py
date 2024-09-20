@@ -21,7 +21,7 @@ def Calculator(operator: Annotated[Operator, "operator"], a:float, b:float) -> i
   else:
     raise ValueError("Invalid operator")
 
-langchain_tools = [CustomSearch,DiscordMessage, CamImgTool]
+langchain_tools = [CamImgTool, CustomSearch,DiscordMessage]
 langchain_tools_description = '\n'.join([f"[{tool.name}]: {tool.description}" for tool in langchain_tools])
 print(langchain_tools)
 print(langchain_tools_description)

@@ -2,12 +2,12 @@ from autogen import ConversableAgent, AssistantAgent, UserProxyAgent
 from functions.tools import langchain_tools_description
 from models.configs.gemini import gemini
 from models.configs.phi3 import phi3
-# from models.gemini_langchain import LangchainModelClient, LangchainMultistepClient
-from models.llamma_langchain import LangchainMultistepClient
+from models.gemini_langchain import LangchainModelClient, LangchainMultistepClient
+# from models.llamma_langchain import LangchainMultistepClient
 
 planner = AssistantAgent(
     "Planner",
-    llm_config=phi3,
+    llm_config=gemini,
     system_message=f"""If the following task needs multiple steps, make plans that can solve the problem step by step. For each plan, indicate \
     which external tool together with tool input to retrieve evidence. You can store the evidence into a \
     variable #E that can be called by later tools. (Plan, #E1, Plan, #E2, Plan, ...)
@@ -27,7 +27,7 @@ planner = AssistantAgent(
 
     Begin! 
     Try not to create unnecessary steps. Each Plan should be followed by only one #En ToolName[<ToolInput>].
-    DO NOT USE ANY TOOLS FROM THE EXAMPLE UNLESS YOU HAVE ACCESS TO IT.
+    you do not have text extraction or text formatting tools
 
     Task: {{task}}""",
 )
